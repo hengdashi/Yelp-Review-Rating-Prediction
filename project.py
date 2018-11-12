@@ -5,20 +5,16 @@ from constants import *
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.linear_model import SGDRegressor
-
+from sklearn.linear_model import SGDClassifier
+from sklearn.svm import SVC
 
 ################# GLOBAL FUNCTIONS TO BE MOVED LATER #################
 
 #Move getData to a utils 
 
-def getData(filepath, cols=None):
-    if cols is None:
-        return pd.read_csv(filepath)
-    else:
-        return pd.read_csv(filepath, usecols=cols)
-        
-        
+def getData(filepath, cols=None, index=None):
+    return pd.read_csv(filepath, index_col=index, usecols=cols)
+
 #Move RMSE to utils
 
 def RMSE(y_pred, y_target):
@@ -62,7 +58,7 @@ class Random_Prob_Model(Classifier):
         #Count up how many of each y there is
         for i, rv in y.iteritems():
             y_count[rv] += 1 
-            
+
         #Assign probabilities accordingly (loop later)
         self.y_probabilities.append(y_count[1.0] / len(y.index))
         self.y_probabilities.append(y_count[2.0] / len(y.index))
@@ -84,42 +80,81 @@ class Random_Prob_Model(Classifier):
         return y   
         
 
-    
+class SGDModel:
+    def __init__(self):
+        # self.sgdr = SGDClassifier(verbose=1, tol=1e-3, max_iter=1000, n_jobs=2)
+        self.sgdr = SVC(verbose=True)
+
+    def train(self, x_train, y_train):
+        self.sgdr.fit(x_train, y_train)
+
+    def predict(self, x_test):
+        return self.sgdr.predict(x_test)
 
 if __name__ == "__main__":
-
+    datafolder = Path(data_path)
     #After we preprocess data and decide features we want, we will load in as numpy arrays instead.
-    
+
     #Load in training data after preprocesing
-    train_data = getData(data_path + "/" + train_data_file, None)
-    test_data = getData(data_path + "/" + test_data_file, None)
-    
+    # train_data = getData(datafolder / train_data_file, None)
+    # test_data = getData(datafolder / test_data_file, None)
+
     #Separate training features from prediction
         #In preprocess i renamed stars to given stars, FIX IF NECESSARY TO UR NAMES
-    train_data_X = train_data.drop(columns = ['given_stars'])
-    train_data_X = train_data_X.drop(train_data_X.columns[0],axis=1)
-    train_data_y = train_data['given_stars'] 
-    
+    # train_data_X = train_data.drop(columns = ['given_stars'])
+    # train_data_X = train_data_X.drop(train_data_X.columns[0],axis=1)
+    # train_data_y = train_data['given_stars']
+
     #Separate testing garbage from predictions
-    test_data_X = test_data.drop(columns = ['stars'])
-    #This drops the first un-named column (REMOVE IF USING PREPROCESS DATA)
-    test_data_X = test_data_X.drop(test_data_X.columns[0],axis=1)
-    test_data_y = test_data['stars']
+    # test_data_X = test_data.drop(columns = ['stars'])
+    # #This drops the first un-named column (REMOVE IF USING PREPROCESS DATA)
+    # test_data_X = test_data_X.drop(test_data_X.columns[0],axis=1)
+    # test_data_y = test_data['stars']
 
     #Do Complete Random Model
-    cf = Complete_Random_Model()
-    rpm_pred = cf.predict(test_data_X)
-    rpm_rmse = RMSE(rpm_pred, test_data_y.values)
-    print(rpm_rmse)
-    
+    # cf = Complete_Random_Model()
+    # rpm_pred = cf.predict(test_data_X)
+    # rpm_rmse = RMSE(rpm_pred, test_data_y.values)
+    # print(rpm_rmse)
+
     #Do Random Probabilistic Model
-    cf = Random_Prob_Model()
-    cf.fit(train_data_X,train_data_y)
-    rpm_pred = cf.predict(test_data_X)
-    rpm_rmse = RMSE(rpm_pred, test_data_y.values)
-    print(rpm_rmse)
-    
+    # cf = Random_Prob_Model()
+    # cf.fit(train_data_X,train_data_y)
+    # rpm_pred = cf.predict(test_data_X)
+    # rpm_rmse = RMSE(rpm_pred, test_data_y.values)
+    # print(rpm_rmse)
+
     #Should get ~2.07 or 2.08 for both
     #They both work just as horrible! Nice!
-    
-    #Print out rpm_pred with indexes if you want to submit this as our first submission. 
+
+    # lets try SGDRegressor
+    train_data = getData(datafolder / huge_train_data_file, index=0)
+    X_train = train_data.drop(columns='stars')
+    y_train = train_data['stars']
+
+    # preprocess validate_queries.csv, move this part to preprocessor latter
+    bus_dict = getData(datafolder / bus_dict_file, index=0)
+    users_dict = getData(datafolder / users_dict_file, index=0)
+    test_data = getData(datafolder / test_data_file, index=0)
+    user_test = test_data['user_id'].apply(lambda user_id: users_dict.loc[user_id,:])
+    bus_test = test_data['business_id'].apply(lambda bus_id: bus_dict.loc[bus_id,:])
+    X_test = pd.concat([user_test, bus_test], axis=1, sort=False)
+    X_test.fillna(X_test.mean(), inplace=True)
+    y_target = test_data['stars']
+
+    # Debug
+    # print(train_data_X.head(1))
+    # print(test_data_X.head(1))
+
+    # init model
+    sgdmodel = SGDModel()
+    # train data
+    sgdmodel.train(X_train.values, y_train.values)
+    # predict
+    y_pred = sgdmodel.predict(X_test.values)
+    y_pred = np.around(y_pred)
+    print(F"predicted y: {y_pred}")
+    sdgr_rmse = RMSE(y_pred, y_target.values)
+    print(F"This is SGDRegressor's RMSE: {sdgr_rmse}")
+
+    #Print out rpm_pred with indexes if you want to submit this as our first submission.
