@@ -7,17 +7,37 @@ from preprocessor import Preprocessor
 
 # Models
 from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import SGDClassifier
-from sklearn.linear_model import SGDRegressor
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+
 
 ################# Models #################
 ############ Base Classifer Class Every Model Inherits From ############
 class Classifier(object):
     def __init__(self):
-        # self.clsfr = SVC(verbose=True, kernel="linear")
-        # self.regr = SGDClassifier(verbose=1, tol=1e-3, max_iter=1000, n_jobs=2)
-        self.clsfr = LogisticRegression(solver='saga', multi_class='multinomial', max_iter=200, verbose=1, n_jobs=3)
+        # self.clsfr = DecisionTreeClassifier(max_features='auto') # Decision Tree 1.22183
+
+        # self.clsfr = SVC(verbose=True, shrinking=False, decision_function_shape='ovo', cache_size=500) # SVM
+        
+        # self.clsfr = KNeighborsClassifier(n_neighbors = 92) # KNN 1.20478
+
+        # self.clsfr = GaussianNB() # naive_bayes 1.22957
+
+        # self.clsfr = SGDClassifier(verbose=1, n_jobs=2, tol=1e-5) # linear svm SGD 1.22123
+
+        # self.clsfr = SGDClassifier(verbose=1, n_jobs=2, tol=1e-5, loss='log') # log SGD 1.24033
+
+        # self.clsfr = SGDClassifier(verbose=1, n_jobs=2, tol=1e-5, loss='modified_huber') # 1.15333
+
+        # self.clsfr = SGDClassifier(verbose=1, n_jobs=2, tol=1e-5, loss='squared_hinge') # 1.37178
+
+        # self.clsfr = LogisticRegression(solver='newton-cg', multi_class='multinomial', verbose=1, n_jobs=3) # Logistic 1.18866 fixed
+        # Random Forest
+        self.clsfr = RandomForestClassifier(n_estimators=500, verbose=1, n_jobs=2) # 1.21995
 
     def train(self, X_train, y_train):
         self.clsfr.fit(X_train, y_train)
@@ -122,16 +142,18 @@ if __name__ == "__main__":
     clsfr = Classifier()
     # train data
     clsfr.train(X_train.values, y_train.values)
+    print("Finished training")
     # predict
     preprocessor = Preprocessor(datafolder)
     X_test, y_test = preprocessor.preprocess_queries(validate_data_file)
     y_pred = clsfr.predict(X_test.values)
+    print("Finished validation")
     y_pred = np.around(y_pred)
     sdgr_rmse = RMSE(y_pred, y_test.values)
-    print(F"This is Logistic Regression Classifier's RMSE: {sdgr_rmse}")
+    print(F"This is Classifier's RMSE: {sdgr_rmse}")
     X_test = preprocessor.preprocess_queries(test_data_file, is_test=True)
     y_pred = clsfr.predict(X_test.values)
+    print("Finished prediction")
     y_pred = np.around(y_pred)
     submission = pd.DataFrame(y_pred, columns=['stars'])
-    print(submission)
     submission.to_csv(submission_file, index_label='index')

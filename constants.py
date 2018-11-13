@@ -15,6 +15,8 @@ huge_train_data_file = "cleaned_train_review.csv" # 4.7GB training data... consi
 
 submission_file = "submission.csv"
 
-bus_features = ["business_id", "stars", "categories", "review_count"]
-users_features = ["user_id", "average_stars", "review_count"]
+# bus_features = ["business_id", "stars", "categories", "review_count"]
+# users_features = ["user_id", "average_stars", "review_count"]
+bus_features = ["business_id", "stars"]
+users_features = ["user_id", "average_stars"]
 review_features = ["user_id", "business_id", "stars"]
