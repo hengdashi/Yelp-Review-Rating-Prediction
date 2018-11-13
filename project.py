@@ -25,7 +25,7 @@ class Classifier(object):
     def __init__(self):
         # self.clsfr = SVC(verbose=True, kernel="linear")
         # self.regr = SGDClassifier(verbose=1, tol=1e-3, max_iter=1000, n_jobs=2)
-        self.clsfr = LogisticRegression(solver='saga', multi_class='multinomial', verbose=1, n_jobs=3)
+        self.clsfr = LogisticRegression(solver='saga', multi_class='multinomial', max_iter=150, verbose=1, n_jobs=3)
 
     def train(self, X_train, y_train):
         self.clsfr.fit(X_train, y_train)
@@ -137,15 +137,15 @@ if __name__ == "__main__":
     # print(test_data_X.head(1))
 
     # init model
-    regr = Classifier()
+    clsfr = Classifier()
     # train data
-    regr.train(X_train.values, y_train.values)
+    clsfr.train(X_train.values, y_train.values)
     # predict
-    y_pred = regr.predict(X_test.values)
+    y_pred = clsfr.predict(X_test.values)
     y_pred = np.around(y_pred)
     print(F"predicted y: {y_pred}")
     sdgr_rmse = RMSE(y_pred, y_target.values)
-    print(F"This is SGDRegressor's RMSE: {sdgr_rmse}")
-    submission = Dataframe(y_pred)
+    print(F"This is Logistic Regression Classifier's RMSE: {sdgr_rmse}")
+    submission = pd.Dataframe(y_pred)
     print(submission)
     submission.to_csv(submission_file, index_label='index')
