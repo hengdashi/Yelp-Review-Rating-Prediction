@@ -3,6 +3,7 @@ import pandas as pd
 from constants import *
 from pathlib import Path
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 
 def getData(filepath, cols=None):
     if cols is None:
@@ -17,6 +18,7 @@ class Preprocessor:
         self.users_data = None
         self.review_data = None
         self.scaler = MinMaxScaler(feature_range=(1, 5))
+        # self.scaler = StandardScaler()
 
     # preprocess business info
     def preprocess_bus(self):
