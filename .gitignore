@@ -11,3 +11,4 @@ Thumbs.db
 # data and pycache
 data/*
 __pycache__/*
+submission_samples/desktop.ini
