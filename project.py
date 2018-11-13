@@ -1,23 +1,15 @@
 import numpy as np
 import pandas as pd
+from utils import *
 from constants import *
 from pathlib import Path
-import matplotlib.pyplot as plt
+from preprocessor import Preprocessor
+
+# Models
 from sklearn.svm import SVC
 from sklearn.linear_model import SGDClassifier
 from sklearn.linear_model import SGDRegressor
 from sklearn.linear_model import LogisticRegression
-
-################# GLOBAL FUNCTIONS TO BE MOVED LATER #################
-
-#Move getData to a utils 
-def getData(filepath, cols=None, index=None):
-    return pd.read_csv(filepath, index_col=index, usecols=cols)
-
-#Move RMSE to utils
-
-def RMSE(y_pred, y_target):
-    return np.sqrt(((y_pred - y_target) ** 2).mean())
 
 ################# Models #################
 ############ Base Classifer Class Every Model Inherits From ############
@@ -25,7 +17,7 @@ class Classifier(object):
     def __init__(self):
         # self.clsfr = SVC(verbose=True, kernel="linear")
         # self.regr = SGDClassifier(verbose=1, tol=1e-3, max_iter=1000, n_jobs=2)
-        self.clsfr = LogisticRegression(solver='saga', multi_class='multinomial', max_iter=150, verbose=1, n_jobs=3)
+        self.clsfr = LogisticRegression(solver='saga', multi_class='multinomial', max_iter=200, verbose=1, n_jobs=3)
 
     def train(self, X_train, y_train):
         self.clsfr.fit(X_train, y_train)
@@ -131,15 +123,15 @@ if __name__ == "__main__":
     # train data
     clsfr.train(X_train.values, y_train.values)
     # predict
-    preprocessor = preprocessor()
+    preprocessor = Preprocessor(datafolder)
     X_test, y_test = preprocessor.preprocess_queries(validate_data_file)
     y_pred = clsfr.predict(X_test.values)
     y_pred = np.around(y_pred)
     sdgr_rmse = RMSE(y_pred, y_test.values)
     print(F"This is Logistic Regression Classifier's RMSE: {sdgr_rmse}")
-    X_test = preprocessor.preprocess_queries(test_data_file)
+    X_test = preprocessor.preprocess_queries(test_data_file, is_test=True)
     y_pred = clsfr.predict(X_test.values)
     y_pred = np.around(y_pred)
-    submission = pd.Dataframe(y_pred)
+    submission = pd.DataFrame(y_pred, columns=['stars'])
     print(submission)
     submission.to_csv(submission_file, index_label='index')

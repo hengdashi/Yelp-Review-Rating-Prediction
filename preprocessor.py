@@ -1,15 +1,10 @@
 import numpy as np
 import pandas as pd
+from utils import *
 from constants import *
 from pathlib import Path
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
-
-def getData(filepath, cols=None):
-    if cols is None:
-        return pd.read_csv(filepath)
-    else:
-        return pd.read_csv(filepath, usecols=cols)
 
 class Preprocessor:
     def __init__(self, datafolder):
@@ -80,16 +75,20 @@ class Preprocessor:
         self.review_data = review_data
         print("Finished train_reviews.csv preprocess")
 
-    def preprocess_queries(self, filename):
+    def preprocess_queries(self, filename, is_test=False):
         # preprocess validate_queries.csv, move this part to preprocessor latter
         bus_dict = getData(self.datafolder / bus_dict_file, index=0)
         users_dict = getData(self.datafolder / users_dict_file, index=0)
-        test_data = getData(self.datafolder / filename, index=0)
+        test_data = None
+        if is_test:
+            test_data = getData(self.datafolder / filename)
+        else:
+            test_data = getData(self.datafolder / filename, index=0)
         user_test = test_data['user_id'].apply(lambda user_id: users_dict.loc[user_id,:])
         bus_test = test_data['business_id'].apply(lambda bus_id: bus_dict.loc[bus_id,:])
         X_test = pd.concat([user_test, bus_test], axis=1, sort=False)
         X_test.fillna(X_test.mean(), inplace=True)
-        if 'stars' in test_data.columns:
+        if not is_test:
             y_test = test_data['stars']
             return X_test, y_test
         else:
