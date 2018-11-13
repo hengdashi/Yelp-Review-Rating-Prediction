@@ -122,16 +122,6 @@ if __name__ == "__main__":
     X_train = train_data.drop(columns='stars')
     y_train = train_data['stars']
 
-    # preprocess validate_queries.csv, move this part to preprocessor latter
-    bus_dict = getData(datafolder / bus_dict_file, index=0)
-    users_dict = getData(datafolder / users_dict_file, index=0)
-    test_data = getData(datafolder / test_data_file, index=0)
-    user_test = test_data['user_id'].apply(lambda user_id: users_dict.loc[user_id,:])
-    bus_test = test_data['business_id'].apply(lambda bus_id: bus_dict.loc[bus_id,:])
-    X_test = pd.concat([user_test, bus_test], axis=1, sort=False)
-    X_test.fillna(X_test.mean(), inplace=True)
-    y_target = test_data['stars']
-
     # Debug
     # print(train_data_X.head(1))
     # print(test_data_X.head(1))
@@ -141,11 +131,15 @@ if __name__ == "__main__":
     # train data
     clsfr.train(X_train.values, y_train.values)
     # predict
+    preprocessor = preprocessor()
+    X_test, y_test = preprocessor.preprocess_queries(validate_data_file)
     y_pred = clsfr.predict(X_test.values)
     y_pred = np.around(y_pred)
-    print(F"predicted y: {y_pred}")
-    sdgr_rmse = RMSE(y_pred, y_target.values)
+    sdgr_rmse = RMSE(y_pred, y_test.values)
     print(F"This is Logistic Regression Classifier's RMSE: {sdgr_rmse}")
+    X_test = preprocessor.preprocess_queries(test_data_file)
+    y_pred = clsfr.predict(X_test.values)
+    y_pred = np.around(y_pred)
     submission = pd.Dataframe(y_pred)
     print(submission)
     submission.to_csv(submission_file, index_label='index')

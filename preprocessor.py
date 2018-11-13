@@ -80,9 +80,17 @@ class Preprocessor:
         self.review_data = review_data
         print("Finished train_reviews.csv preprocess")
 
-    def get_data(self):
-        return self.bus_data, self.users_data, self.review_data
-
-    def get_train_data(self):
-        y_train = self.train_data['stars']
-        return x_train, y_train
+    def preprocess_queries(self, filename):
+        # preprocess validate_queries.csv, move this part to preprocessor latter
+        bus_dict = getData(self.datafolder / bus_dict_file, index=0)
+        users_dict = getData(self.datafolder / users_dict_file, index=0)
+        test_data = getData(self.datafolder / filename, index=0)
+        user_test = test_data['user_id'].apply(lambda user_id: users_dict.loc[user_id,:])
+        bus_test = test_data['business_id'].apply(lambda bus_id: bus_dict.loc[bus_id,:])
+        X_test = pd.concat([user_test, bus_test], axis=1, sort=False)
+        X_test.fillna(X_test.mean(), inplace=True)
+        if 'stars' in test_data.columns:
+            y_test = test_data['stars']
+            return X_test, y_test
+        else:
+            return X_test
