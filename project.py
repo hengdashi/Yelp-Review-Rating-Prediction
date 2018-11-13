@@ -23,7 +23,7 @@ def RMSE(y_pred, y_target):
 ############ Base Classifer Class Every Model Inherits From ############
 class Classifier(object):
     def __init__(self):
-        self.clsfr = SVC(verbose=True, kernel="linear")
+        # self.clsfr = SVC(verbose=True, kernel="linear")
         # self.regr = SGDClassifier(verbose=1, tol=1e-3, max_iter=1000, n_jobs=2)
         self.clsfr = LogisticRegression(solver='saga', multi_class='multinomial', verbose=1, n_jobs=3)
 
