@@ -15,8 +15,15 @@ huge_train_data_file = "cleaned_train_review.csv" # 4.7GB training data... consi
 
 submission_file = "submission.csv"
 
-# bus_features = ["business_id", "stars", "categories", "review_count"]
-# users_features = ["user_id", "average_stars", "review_count"]
-bus_features = ["business_id", "stars"]
-users_features = ["user_id", "average_stars"]
+# possible useful features
+# attributes_Ambience    parse this one
+# attributes_BusinessParking    parse as well
+# attributes_Caters    fill NaN with False
+# attributes_RestaurantsDelivery    fill NaN with False
+# attributes_RestaurantsPriceRange2    fill NaN with 2
+# attributes_RestaurantReservations    fill NaN with False
+# attributes_RestaurantTakeOut    fill NaN with True
+# attributes_WiFi    fill NaN with no
+bus_features = ["business_id", "stars", "review_count", "attributes_RestaurantsPriceRange2"] #  "categories",
+users_features = ["user_id", "average_stars"] # , "review_count"
 review_features = ["user_id", "business_id", "stars"]
