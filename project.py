@@ -17,6 +17,8 @@ from sklearn.linear_model import LogisticRegressionCV
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.ensemble import AdaBoostRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+
 from sklearn import linear_model
 from sklearn import neighbors
 
@@ -31,11 +33,6 @@ from sklearn.metrics import make_scorer
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
-
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import chi2
-from sklearn.feature_selection import RFE
-
 
 ############ Base Classifier/Regressors Class Every Model Will Inherit From ############
 
@@ -121,7 +118,7 @@ class LinearRegression(Regressor):
         
     def predict(self, X_test):
         return self.regsr.predict(X_test)  
-
+    
 class LogisticRegression(Classifier):
     def __init__(self):
         self.regsr = LogisticRegressionCV(cv=5, solver='newton-cg', multi_class='multinomial', verbose=1, n_jobs=2) # Logistic 1.18866 fixed
@@ -140,70 +137,65 @@ if __name__ == "__main__":
     X_train = getData(datafolder / huge_train_data_file, index = 0) 
     y_train = X_train['stars']
     X_train = X_train.drop(columns="stars")
-    #X_train = X_train.drop(columns=bus_features_drop)           #IF U WANT TO DROP FEATURES THIS IS HOW
+    
+    
+   #X_train = X_train.drop(columns=bus_features_bool) #IF U WANT TO DROP FEATURES THIS IS HOW
     X_train = X_train.values
     y_train = y_train.values
+    
 
     
     #The indexes of the data frame arnt used so just ignore how it doesn't start w/ 0 
     X_val = getData(datafolder / cleaned_validate_queries, index = 0)   
     y_val = X_val['stars']
     X_val = X_val.drop(columns='stars')
-    #X_val = X_val.drop(columns=bus_features_drop)
-    X_val = X_val.values
+   # X_val = X_val.drop(columns=bus_features_bool) #IF YOU WANT TO DROP FEATURES THIS IS HOW
+    X_val = X_val.values  
     y_val = y_val.values
 
+
     X_test = getData( datafolder / cleaned_test_queries, index = 0) 
-    #X_test = X_test.drop(columns=bus_features_drop)             #IF U WANT TO DROP FEATURES THIS IS HOW
+   # X_test = X_test.drop(columns=bus_features_bool) #IF U WANT TO DROP FEATURES THIS IS HOW
     X_test = X_test.values
-    
     # we dont have y test for the uneducated
     # Use .values to convert to numpy
-   
-    # GRAPHS AND FEATURE ANALYSIS .....
+    
+  
+
+
+  # TODO  GRAPHS AND FEATURE ANALYSIS .....
 
     scaler = MinMaxScaler(feature_range=(1,5))
     if scale:
        X_train = scaler.fit_transform(X_train)
        X_val = scaler.transform(X_val)
        X_test = scaler.transform(X_test)
-
-
-    '''
-    # https://scikit-learn.org/stable/modules/feature_selection.html
-    # Feature Selection - Univariate 
-    test = SelectKBest(score_func=chi2, k=4)
-    fit = test.fit(X_train.values, y_train.values)
-    np.set_printoptions(precision=3)
-    print(fit.scores_)
-    #features = fit.transform(X_train.values)
-    #print(features[0:5,:])
-    """
-    [1.038e+03 5.046e+06 9.053e+06 1.770e+02 6.146e+00 7.145e+01 1.034e+02
-    4.067e+02 1.494e+02 1.679e+01 3.356e+02 6.182e+00 2.810e+02 4.461e+02
-    2.346e+02 5.945e+01 2.073e+05 1.594e+03]
-    """
-    
-    # Feature Selection - Recursive Feature Elimination (takes a while)
-    model = LogisticRegressionCV()
-    rfe = RFE(model, 3)
-    fit = rfe.fit(X_train.values, y_train.values)
-    print("Num Features:", fit.n_features_)
-    print("Selected Features:", fit.support_)
-    print("Feature Ranking:", fit.ranking_)
-    # Feature Ranking: [ 1 14 16  5  3  6 13  4 11 12  2  8 10  7  1  9 15  1]
-    
-
-    # Feature Selection - Feature Importance
-    model = ExtraTreesClassifier()
-    model.fit(X_train.values, y_train.values)
-    print(model.feature_importances_)
-    # [0.23  0.217 0.2   0.007 0.01  0.008 0.006 0.003 0.018 0.008 0.006 0.005 0.012 0.211 0.059]
-    '''
-    
   
-    # Lets try some models
-
+    # BEST MODEL SO FAR! 185, 4, .1 (1.0427 submitted, 1.0425 if attributes_Caters dropped
+    
+    for i in [185]:
+        for j in [4]:
+            for lr in [.1]: #.09 is a little better but not much
+                gbd = GradientBoostingRegressor(n_estimators=i, learning_rate=lr, max_depth=j, random_state=0, loss='ls').fit(X_train, y_train)
+                y_pred = gbd.predict(X_val)
+                rmse = math.sqrt(mean_squared_error(y_val, y_pred))
+                print("Validation RMSE is: {} {} {} {}".format(rmse, i , j, lr))
+                y_pred = gbd.predict(X_test)
+                submission = pd.DataFrame(y_pred, columns=['stars'])
+                submission.to_csv(submission_file, index_label='index')
+    print(gbd.feature_importances_)
+    
+    '''
+    #Random Forest , 1.043 not the best
+    for i in [150, 200, 250]:
+        for j in [8]: 
+            for k in [2,3,4]:
+                rf = RandomForestRegressor(n_estimators=i, max_depth=j, random_state=0, min_samples_split = k).fit(X_train, y_train)
+                y_pred = rf.predict(X_val)
+                rmse = RMSE(y_val, y_pred)
+                print("RF Validation RMSE is: {} {} {}".format(rmse, i , j))
+        
+    '''
     '''
     ###### Random Model ###### RMSE = ~2.1
     print("Random Model ...")
@@ -269,7 +261,10 @@ if __name__ == "__main__":
     submission = pd.DataFrame(y_pred, columns=['stars'])
     submission.to_csv(submission_file, index_label='index')
     print("Linear Regression FINISHED")
+    '''
     
+    '''
+    #Wont converge if the boolean features are included, remove them if using log regression
     print("Logistic Regression Model ...")
     clf = LogisticRegression()
     #Validation 
@@ -344,11 +339,9 @@ if __name__ == "__main__":
     '''
     
     
-
-
-    
     
 ### EXPERIMENTAL / OLD BELOW
+
     
     '''
     #rng = np.random.RandomState(1)
