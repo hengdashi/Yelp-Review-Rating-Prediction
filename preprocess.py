@@ -11,3 +11,5 @@ if __name__ == "__main__":
     preprocessor.preprocess_bus()
     preprocessor.preprocess_users()
     preprocessor.preprocess_reviews()
+    preprocessor.preprocess_queries()
+    
