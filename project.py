@@ -32,6 +32,11 @@ from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import RFE
+
+
 ############ Base Classifier/Regressors Class Every Model Will Inherit From ############
 
 class Classifier(object):
@@ -116,7 +121,7 @@ class LinearRegression(Regressor):
         
     def predict(self, X_test):
         return self.regsr.predict(X_test)  
-    
+
 class LogisticRegression(Classifier):
     def __init__(self):
         self.regsr = LogisticRegressionCV(cv=5, solver='newton-cg', multi_class='multinomial', verbose=1, n_jobs=2) # Logistic 1.18866 fixed
@@ -138,7 +143,7 @@ if __name__ == "__main__":
     
     X_train = X_train.values
     y_train = y_train.values
-    #X_train = X_train.drop(columns=bus_features_bool) IF U WANT TO DROP FEATURES THIS IS HOW
+    #X_train = X_train.drop(columns=bus_features_drop) IF U WANT TO DROP FEATURES THIS IS HOW
 
     
     #The indexes of the data frame arnt used so just ignore how it doesn't start w/ 0 
@@ -147,15 +152,15 @@ if __name__ == "__main__":
     X_val = X_val.drop(columns='stars')
     X_val = X_val.values
     y_val = y_val.values
-    #X_val = X_val.drop(columns=bus_features_bool)
+    #X_val = X_val.drop(columns=bus_features_drop)
 
     X_test = getData( datafolder / cleaned_test_queries, index = 0) 
     X_test = X_test.values
-    #X_test = X_test.drop(columns=bus_features_bool) IF U WANT TO DROP FEATURES THIS IS HOW
+    #X_test = X_test.drop(columns=bus_features_drop)             #IF U WANT TO DROP FEATURES THIS IS HOW
     
     # we dont have y test for the uneducated
     # Use .values to convert to numpy
-    
+   
     # GRAPHS AND FEATURE ANALYSIS .....
 
     scaler = MinMaxScaler(feature_range=(1,5))
@@ -163,6 +168,40 @@ if __name__ == "__main__":
        X_train = scaler.fit_transform(X_train)
        X_val = scaler.transform(X_val)
        X_test = scaler.transform(X_test)
+
+
+    '''
+    # https://scikit-learn.org/stable/modules/feature_selection.html
+    # Feature Selection - Univariate 
+    test = SelectKBest(score_func=chi2, k=4)
+    fit = test.fit(X_train.values, y_train.values)
+    np.set_printoptions(precision=3)
+    print(fit.scores_)
+    #features = fit.transform(X_train.values)
+    #print(features[0:5,:])
+    """
+    [1.038e+03 5.046e+06 9.053e+06 1.770e+02 6.146e+00 7.145e+01 1.034e+02
+    4.067e+02 1.494e+02 1.679e+01 3.356e+02 6.182e+00 2.810e+02 4.461e+02
+    2.346e+02 5.945e+01 2.073e+05 1.594e+03]
+    """
+    
+    # Feature Selection - Recursive Feature Elimination (takes a while)
+    model = LogisticRegressionCV()
+    rfe = RFE(model, 3)
+    fit = rfe.fit(X_train.values, y_train.values)
+    print("Num Features:", fit.n_features_)
+    print("Selected Features:", fit.support_)
+    print("Feature Ranking:", fit.ranking_)
+    # Feature Ranking: [ 1 14 16  5  3  6 13  4 11 12  2  8 10  7  1  9 15  1]
+    
+
+    # Feature Selection - Feature Importance
+    model = ExtraTreesClassifier()
+    model.fit(X_train.values, y_train.values)
+    print(model.feature_importances_)
+    # [0.23  0.217 0.2   0.007 0.01  0.008 0.006 0.003 0.018 0.008 0.006 0.005 0.012 0.211 0.059]
+    '''
+    
   
     # Lets try some models
 
@@ -245,6 +284,7 @@ if __name__ == "__main__":
     submission.to_csv(submission_file, index_label='index')
     print("Linear Regression FINISHED")
     '''
+    
     '''
     #1.048 ish with max depth of 7, 1.058 on submit
     #Decision Tree
@@ -305,9 +345,11 @@ if __name__ == "__main__":
     '''
     
     
+
+
+    
     
 ### EXPERIMENTAL / OLD BELOW
-
     
     '''
     #rng = np.random.RandomState(1)
