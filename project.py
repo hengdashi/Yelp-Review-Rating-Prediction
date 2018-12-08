@@ -189,14 +189,14 @@ if __name__ == "__main__":
     # Load in Training and Testing Data
     datafolder = Path(data_path)
     X_train = getData(datafolder / huge_train_data_file, index = 0) 
-    y_train = X_train[['stars']]
-    X_train = X_train.drop(columns="stars")
+    y_train = X_train['stars']      #y_train = X_train[['stars']]
+    X_train = X_train.drop(columns='stars')
     #X_train = X_train.drop(columns=bus_features_bool) IF U WANT TO DROP FEATURES THIS IS HOW
 
     
     #The indexes of the dataframe arnt used so just ignore how it doesnt start w/ 0 
     X_val = getData(datafolder / cleaned_validate_queries, index = 0)   
-    y_val = X_val[['stars']]
+    y_val = X_val['stars']
     X_val = X_val.drop(columns='stars')
     #X_val = X_val.drop(columns=bus_features_bool)
 
@@ -210,6 +210,8 @@ if __name__ == "__main__":
     
     # Lets try some models
     
+
+    """
     ###### Random Model ###### RMSE = ~2.1
     print("Random Model ...")
     clf = Complete_Random_Model()
@@ -223,7 +225,9 @@ if __name__ == "__main__":
     submission = pd.DataFrame(y_pred, columns=['stars'])
     submission.to_csv(submission_file, index_label='index')
     print("Random Model FINISHED")
-    
+    """
+
+
     '''
     ###### Random Probabilistic Model  ###### RMSE = ~1.7
     print("Random Probabilistic Model ...")
@@ -256,37 +260,44 @@ if __name__ == "__main__":
     print("Linear Regression FINISHED")
     '''
     
-    
+
+    """
     #Regression with polynomial features 1.046 with polyfeatures(3)
-    #print("Linear Regression Model ...")
-    #clf = LinearRegression()
-    #poly = PolynomialFeatures(3)
-    #X_poly_train = poly.fit_transform(X_train.values)
-    #X_poly_val = poly.fit_transform(X_val.values)
+    print("Linear Regression Model ...")
+    clf = LinearRegression()
+    poly = PolynomialFeatures(3)
+    X_poly_train = poly.fit_transform(X_train.values)
+    X_poly_val = poly.fit_transform(X_val.values)
     #Validation 
-    #clf.fit(X_poly_train,y_train.values)
-    #y_pred = clf.predict(X_poly_val)
-    #rmse = RMSE(y_pred, y_val.values)
-    #print(F"Linear Regression RMSE is: {rmse}")
+    clf.fit(X_poly_train,y_train.values)
+    y_pred = clf.predict(X_poly_val)
+    rmse = RMSE(y_pred, y_val.values)
+    print(F"Linear Regression RMSE is: {rmse}")
     #Test 
-    #y_pred = clf.predict(X_test.values)
-    #submission = pd.DataFrame(y_pred, columns=['stars'])
-    #submission.to_csv(submission_file, index_label='index')
-    #print("Linear Regression FINISHED")
+    y_pred = clf.predict(X_test.values)
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+    print("Linear Regression FINISHED")
+    """
+
     
-    #print("Logistic Regression Model ...")
-    #clf = LogisticRegression()
+    """
+    print("Logistic Regression Model ...")
+    clf = LogisticRegression()
     #Validation 
-    #clf.fit(X_train.values,y_train.values)
-    #y_pred = clf.predict(X_val)
-    #rmse = RMSE(y_pred, y_val.values)
-    #print(F"Log Regression RMSE is: {rmse}")
+    clf.fit(X_train.values,y_train.values)
+    y_pred = clf.predict(X_val)
+    rmse = RMSE(y_pred, y_val.values)
+    print(F"Log Regression RMSE is: {rmse}")
     #Test 
-    #y_pred = clf.predict(X_test.values)
-    #submission = pd.DataFrame(y_pred, columns=['stars'])
-    #submission.to_csv(submission_file, index_label='index')
-    #print("Linear Regression FINISHED")
-    
+    y_pred = clf.predict(X_test.values)
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+    print("Linear Regression FINISHED")
+    """
+
+
+
     '''
     #1.048 ish with max depth of 7, 1.058 on submit
     #Decision Tree
@@ -319,35 +330,13 @@ if __name__ == "__main__":
     print("Decision Tree Model FINISHED")    
     '''
     
+
+
     #clf = autosklearn.classification.AutoSklearnClassifier()
     #clf.fit(X_train.values, y_train.values)
     #y_pred = clf.predict(X_val.values)
     #rmse = RMSE(y_pred, y_val.values)
     #print("rmse is {}".format(rmse))
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -383,6 +372,8 @@ if __name__ == "__main__":
    '''
     
     
+
+
     # init model
     #regsr = Regressor()
     # train data
@@ -404,4 +395,21 @@ if __name__ == "__main__":
 
     #print("Finished training")
     # report(regsr.getparams())
+
+
+
+
+    # Neural Network
+    regsr = MLPRegressor(verbose=True, max_iter=200, hidden_layer_sizes=100, learning_rate='adaptive', learning_rate_init=1e-4)
+    regsr.fit(X_train.values, y_train.values)
+    print("Finished training")
+    y_pred = regsr.predict(X_val.values)
+    print("Finished validation")
+    sdgr_rmse = RMSE(y_pred, y_val.values)
+    print(F"This is NN's RMSE: {sdgr_rmse}")
+    y_pred = regsr.predict(X_test.values)
+    print("Finished prediction")
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+ 
 
