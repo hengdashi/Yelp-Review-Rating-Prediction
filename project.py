@@ -140,23 +140,22 @@ if __name__ == "__main__":
     X_train = getData(datafolder / huge_train_data_file, index = 0) 
     y_train = X_train['stars']
     X_train = X_train.drop(columns="stars")
-    
+    #X_train = X_train.drop(columns=bus_features_drop)           #IF U WANT TO DROP FEATURES THIS IS HOW
     X_train = X_train.values
     y_train = y_train.values
-    #X_train = X_train.drop(columns=bus_features_drop) IF U WANT TO DROP FEATURES THIS IS HOW
 
     
     #The indexes of the data frame arnt used so just ignore how it doesn't start w/ 0 
     X_val = getData(datafolder / cleaned_validate_queries, index = 0)   
     y_val = X_val['stars']
     X_val = X_val.drop(columns='stars')
+    #X_val = X_val.drop(columns=bus_features_drop)
     X_val = X_val.values
     y_val = y_val.values
-    #X_val = X_val.drop(columns=bus_features_drop)
 
     X_test = getData( datafolder / cleaned_test_queries, index = 0) 
-    X_test = X_test.values
     #X_test = X_test.drop(columns=bus_features_drop)             #IF U WANT TO DROP FEATURES THIS IS HOW
+    X_test = X_test.values
     
     # we dont have y test for the uneducated
     # Use .values to convert to numpy
