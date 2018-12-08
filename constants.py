@@ -38,9 +38,19 @@ bus_features_bool = ["attributes_BikeParking", "attributes_BusinessAcceptsCredit
                      "attributes_RestaurantsGoodForGroups", "attributes_RestaurantsReservations","attributes_RestaurantsTableService", 
                      "attributes_RestaurantsTakeOut", "attributes_WheelchairAccessible"]
 
+# bus_features_drop = features to drop
+bus_features_drop = bus_features_bool.copy()
+bus_features_keep = ["attributes_BusinessAcceptsCreditCards", "attributes_RestaurantsGoodForGroups", "attributes_RestaurantsTakeOut",
+                    "attributes_HasTV", "attributes_BikeParking" ] # Features to Keep
+for feature in bus_features_keep:
+    if feature in bus_features_drop:
+        bus_features_drop.remove(feature)
+
+
 # All user features we want are numerical
 user_features_id = ["user_id"]
 user_features_numerical = ["average_stars", "review_count", "useful"] 
+
 
 # All 
 review_features = ["user_id", "business_id", "stars"]
