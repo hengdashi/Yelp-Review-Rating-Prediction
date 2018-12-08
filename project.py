@@ -28,6 +28,7 @@ from sklearn.kernel_approximation import *
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import RandomizedSearchCV
+from sklearn.metrics import mean_squared_error
 
 
 
@@ -187,19 +188,21 @@ if __name__ == "__main__":
     
     # Load in Training and Testing Data
     datafolder = Path(data_path)
-    train_data = getData(datafolder / huge_train_data_file, index = 0, cols=["bus_avg_stars", "user_avg_stars", "stars"]) #remove cols= prince
-    X_train = train_data.drop(columns='stars')
-    y_train = train_data[['stars']]
-    #print(X_train)
-    #print(y_train)
+    X_train = getData(datafolder / huge_train_data_file, index = 0) 
+    y_train = X_train[['stars']]
+    X_train = X_train.drop(columns="stars")
+    #X_train = X_train.drop(columns=bus_features_bool) IF U WANT TO DROP FEATURES THIS IS HOW
+
     
     #The indexes of the dataframe arnt used so just ignore how it doesnt start w/ 0 
-    val = getData(datafolder / cleaned_validate_queries, index = 0, cols=["bus_avg_stars", "user_avg_stars", "stars"])    #remove cols= prince
-    X_val = val.drop(columns='stars')
-    y_val = val[['stars']]
+    X_val = getData(datafolder / cleaned_validate_queries, index = 0)   
+    y_val = X_val[['stars']]
+    X_val = X_val.drop(columns='stars')
+    #X_val = X_val.drop(columns=bus_features_bool)
 
-    test = getData( datafolder / cleaned_test_queries, index = 0, cols=["bus_avg_stars", "user_avg_stars"]) #remove cols= prince
-    X_test = val.drop(columns='stars')
+    X_test = getData( datafolder / cleaned_test_queries, index = 0) 
+    #X_test = X_test.drop(columns=bus_features_bool) IF U WANT TO DROP FEATURES THIS IS HOW
+    
     # we dont have y test for the uneducated
     # Use .values to convert to numpy
    
@@ -213,7 +216,7 @@ if __name__ == "__main__":
     #Validation 
     y_pred = clf.predict(X_val.values)
     print(y_pred)
-    rmse = RMSE(y_pred, y_val.values)
+    rmse = math.sqrt(mean_squared_error(y_val.values, y_pred))
     print("Random Validation RMSE is: {}".format(rmse))
     #Test 
     y_pred = clf.predict(X_test.values)
