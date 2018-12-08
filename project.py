@@ -216,7 +216,7 @@ if __name__ == "__main__":
     #Validation 
     y_pred = clf.predict(X_val.values)
     print(y_pred)
-    rmse = math.sqrt(mean_squared_error(y_val.values, y_pred))
+    rmse = RMSE(y_pred, y_val.values)
     print("Random Validation RMSE is: {}".format(rmse))
     #Test 
     y_pred = clf.predict(X_test.values)
