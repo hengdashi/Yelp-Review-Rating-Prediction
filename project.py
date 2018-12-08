@@ -332,13 +332,13 @@ if __name__ == "__main__":
     '''
     # Neural Network
     regsr = MLPRegressor(verbose=True, max_iter=200, hidden_layer_sizes=100, learning_rate='adaptive', learning_rate_init=1e-4)
-    regsr.fit(X_train.values, y_train.values)
+    regsr.fit(X_train, y_train)
     print("Finished training")
-    y_pred = regsr.predict(X_val.values)
+    y_pred = regsr.predict(X_val)
     print("Finished validation")
-    sdgr_rmse = RMSE(y_pred, y_val.values)
+    sdgr_rmse = RMSE(y_pred, y_val)
     print(F"This is NN's RMSE: {sdgr_rmse}")
-    y_pred = regsr.predict(X_test.values)
+    y_pred = regsr.predict(X_test)
     print("Finished prediction")
     submission = pd.DataFrame(y_pred, columns=['stars'])
     submission.to_csv(submission_file, index_label='index')
@@ -350,7 +350,6 @@ if __name__ == "__main__":
     
     
 ### EXPERIMENTAL / OLD BELOW
-
     
     '''
     #rng = np.random.RandomState(1)
