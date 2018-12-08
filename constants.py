@@ -27,7 +27,7 @@ submission_file = "submission.csv"
 
 # Features related
 
-#Buisness id is not numerical but oh well
+#Business id is not numerical but oh well
 
 bus_features_id = ["business_id"]
 
@@ -44,3 +44,7 @@ user_features_numerical = ["average_stars", "review_count", "useful"]
 
 # All 
 review_features = ["user_id", "business_id", "stars"]
+
+# Scale or not
+
+scale = False

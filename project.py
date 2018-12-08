@@ -18,6 +18,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn import linear_model
+from sklearn import neighbors
 
 from sklearn import metrics
 from sklearn.preprocessing import PolynomialFeatures
@@ -29,10 +30,9 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
 
-
-
-############ Base Classifer/Regressor Class Every Model Will Inherit From ############
+############ Base Classifier/Regressors Class Every Model Will Inherit From ############
 
 class Classifier(object):
     def fit(self, X_train, y_train):
@@ -52,7 +52,6 @@ class Regressor(object):
 
 class Complete_Random_Model(Classifier):
     #Random Classifier is bad, just a baseline to see HOW bad RMSE can be
-    
     #Randomly Assigns a prediction value
     def __init__(self):
         pass
@@ -89,7 +88,7 @@ class Random_Prob_Model(Classifier):
     
     def predict(self, X_test):
         
-        #Check if fit occured
+        #Check if fit occurred
         if self.y_probabilities is None :
             raise Exception("A fit was never carried out...")
         
@@ -128,7 +127,251 @@ class LogisticRegression(Classifier):
     def predict(self, X_test):
         return self.regsr.predict(X_test)   
 
-#class Regressor(object):
+
+if __name__ == "__main__":
+    
+    # Load in Training and Testing Data
+    datafolder = Path(data_path)
+    X_train = getData(datafolder / huge_train_data_file, index = 0) 
+    y_train = X_train['stars']
+    X_train = X_train.drop(columns="stars")
+    
+    X_train = X_train.values
+    y_train = y_train.values
+    #X_train = X_train.drop(columns=bus_features_bool) IF U WANT TO DROP FEATURES THIS IS HOW
+
+    
+    #The indexes of the data frame arnt used so just ignore how it doesn't start w/ 0 
+    X_val = getData(datafolder / cleaned_validate_queries, index = 0)   
+    y_val = X_val['stars']
+    X_val = X_val.drop(columns='stars')
+    X_val = X_val.values
+    y_val = y_val.values
+    #X_val = X_val.drop(columns=bus_features_bool)
+
+    X_test = getData( datafolder / cleaned_test_queries, index = 0) 
+    X_test = X_test.values
+    #X_test = X_test.drop(columns=bus_features_bool) IF U WANT TO DROP FEATURES THIS IS HOW
+    
+    # we dont have y test for the uneducated
+    # Use .values to convert to numpy
+    
+    # GRAPHS AND FEATURE ANALYSIS .....
+
+    scaler = MinMaxScaler(feature_range=(1,5))
+    if scale:
+       X_train = scaler.fit_transform(X_train)
+       X_val = scaler.transform(X_val)
+       X_test = scaler.transform(X_test)
+  
+    # Lets try some models
+
+    '''
+    ###### Random Model ###### RMSE = ~2.1
+    print("Random Model ...")
+    clf = Complete_Random_Model()
+    #Validation 
+    y_pred = clf.predict(X_val)
+    rmse = math.sqrt(mean_squared_error(y_val, y_pred))
+    print("Random Validation RMSE is: {}".format(rmse))
+    #Test 
+    y_pred = clf.predict(X_test)
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+    print("Random Model FINISHED")
+    
+    
+    ###### Random Probabilistic Model  ###### RMSE = ~1.7
+    print("Random Probabilistic Model ...")
+    clf = Random_Prob_Model()
+    #Validation 
+    clf.fit(X_train,y_train.tolist())
+    y_pred = clf.predict(X_val)
+    rmse = RMSE(y_pred, y_val)
+    print(F"Random Probabilistic Validation RMSE is: {rmse}")
+    #Test 
+    y_pred = clf.predict(X_test)
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+    print("Random Probabilistic Model FINISHED")
+    '''
+    
+    '''
+    #validation rmse = 1.0522
+    #Linear Regression
+    print("Linear Regression Model ...")
+    clf = LinearRegression()
+    #Validation 
+    clf.fit(X_train,y_train)
+    y_pred = clf.predict(X_val)
+    rmse = RMSE(y_pred, y_val)
+    print(F"Linear Regression RMSE is: {rmse}")
+    #Test 
+    y_pred = clf.predict(X_test)
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+    print("Linear Regression FINISHED")
+    '''
+    
+    '''
+    #Regression with polynomial features 1.046 with polyfeatures(3)
+    print("Linear Regression Model with polyfeatures ...")
+    clf = LinearRegression()
+    poly = PolynomialFeatures(3)
+    X_poly_train = poly.fit_transform(X_train)
+    X_poly_val = poly.fit_transform(X_val)
+    #Validation 
+    clf.fit(X_poly_train,y_train)
+    y_pred = clf.predict(X_poly_val)
+    rmse = RMSE(y_pred, y_val)
+    print(F"Linear Regression RMSE is: {rmse}")
+    #Test 
+    X_poly_test = poly.fit_transform(X_test)
+    y_pred = clf.predict(X_poly_test)
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+    print("Linear Regression FINISHED")
+    
+    print("Logistic Regression Model ...")
+    clf = LogisticRegression()
+    #Validation 
+    clf.fit(X_train,y_train)
+    y_pred = clf.predict(X_val)
+    rmse = RMSE(y_pred, y_val)
+    print(F"Log Regression RMSE is: {rmse}")
+    #Test 
+    y_pred = clf.predict(X_test)
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+    print("Linear Regression FINISHED")
+    '''
+    '''
+    #1.048 ish with max depth of 7, 1.058 on submit
+    #Decision Tree
+    print("Decision Tree Model ...")
+    print("Investingating Best Depth...")
+    dt_rmse = []
+    dt_max_depths = np.arange(1,21)
+    for i in dt_max_depths:
+        clf = DecisionTree(i)
+        #Validation 
+        clf.fit(X_train,y_train)
+        y_pred = clf.predict(X_val)
+        rmse = RMSE(y_val, y_pred)
+        dt_rmse.append(rmse)
+    best_k = np.argmin(dt_rmse) + 1
+    print("Best depth is : {} with RMSE {}".format(best_k,dt_rmse[best_k-1]))
+    plt.title('Validation RMSE vs Max Tree Depth')
+    plt.xlabel('Max Tree Depth')
+    plt.ylabel('Validation RMSE')
+    plt.plot(dt_max_depths, dt_rmse, 'ko-')
+    plt.show()
+    #Refit to out submission
+    clf = DecisionTree(best_k)
+    #Validation 
+    clf.fit(X_train,y_train)
+    #Test 
+    y_pred = clf.predict(X_test)
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+    print("Decision Tree Model FINISHED")    
+    '''
+    
+    '''
+    #KNN bad rmse like 1.2ish?
+    #DO NOT USE SCALE AND THIS
+    for w in ['uniform', 'distance']:
+        for i in range(1,25):
+            knn = neighbors.KNeighborsRegressor(i, w)
+            clf = knn.fit(X_train,y_train)
+            y_pred = clf.predict(X_val)
+            rmse = RMSE(y_val, y_pred)
+            print("i is {}, rmse is {}".format(i,rmse))
+    '''
+    
+    '''
+    # Neural Network
+    regsr = MLPRegressor(verbose=True, max_iter=200, hidden_layer_sizes=100, learning_rate='adaptive', learning_rate_init=1e-4)
+    regsr.fit(X_train, y_train)
+    print("Finished training")
+    y_pred = regsr.predict(X_val)
+    print("Finished validation")
+    sdgr_rmse = RMSE(y_pred, y_val)
+    print(F"This is NN's RMSE: {sdgr_rmse}")
+    y_pred = regsr.predict(X_test)
+    print("Finished prediction")
+    submission = pd.DataFrame(y_pred, columns=['stars'])
+    submission.to_csv(submission_file, index_label='index')
+    '''
+    
+    
+    
+### EXPERIMENTAL / OLD BELOW
+
+    
+    '''
+    #rng = np.random.RandomState(1)
+    #regr_2 = AdaBoostRegressor(DecisionTreeRegressor(max_depth=13),
+    #                      n_estimators=500, random_state=rng)
+#
+    #regr_2.fit(X_train,y_train)
+    #y_pred = regr_2.predict(X_val)
+    #rmse = RMSE(y_pred, y_val)
+   # print(rmse)
+    
+    #for j in [500,2000,8000,99999]:
+    #    clf_stump=DecisionTreeRegressor(max_features=None,max_leaf_nodes=j)
+    #    for i in np.arange(1,26):
+    #        bstlfy=AdaBoostRegressor(base_estimator=clf_stump,n_estimators=i)
+    #    bstlfy.fit(X_train,y_train)
+    #    y_pred = bstlfy.predict(X_val)
+    #    rmse = RMSE(y_pred, y_val)
+    #    print(rmse)
+    
+   # DTC = DecisionTreeRegressor(random_state = 11, max_features = "auto",max_depth = None)
+
+    #ABC = AdaBoostRegressor(base_estimator = DTC)
+
+    # run grid search
+   # my_func = make_scorer(RMSE,greater_is_better=False)
+   # grid_search_ABC = GridSearchCV(ABC, param_grid=param_grid, scoring =my_func)    
+   # grid_search_ABC.fit(X_train,y_train)
+   # print(grid_search_ABC.best_params_)
+   '''
+    
+    
+    # init model
+    #regsr = Regressor()
+    # train data
+    #regsr.train(X_train, y_train)
+    # plt.plot(regsr.getObject().loss_curve_)
+
+    # used for minibatch SGD
+    # perm = np.random.permutation(len(X_train))
+    # X_train_random = X_train.values[perm]
+    # y_train_random = y_train.values[perm]
+    # chunk_size = 50
+    # num_folds = math.ceil(X_train_random.shape[0] / chunk_size)
+    # X_train_folds = np.asarray(np.array_split(X_train_random, num_folds))
+    # y_train_folds = np.asarray(np.array_split(y_train_random, num_folds))
+    # regsr.minibatch_train(X_train_folds, y_train_folds)
+
+    # display the relative importance of each attribute
+    # print(regsr.getObject().feature_importances_)
+
+    #print("Finished training")
+    # report(regsr.getparams())
+
+
+        
+    #clf = autosklearn.classification.AutoSklearnClassifier()
+    #clf.fit(X_train, y_train)
+    #y_pred = clf.predict(X_val)
+    #rmse = RMSE(y_pred, y_val)
+    #print("rmse is {}".format(rmse))
+    
+    
+    #class Regressor(object):
     #def __init__(self):
 
         # self.regsr = SVC(verbose=True, shrinking=False, decision_function_shape='ovo', cache_size=500) # SVM
@@ -182,234 +425,3 @@ class LogisticRegression(Classifier):
 
     #def getObject(self):
     #    return self.regsr
-
-
-if __name__ == "__main__":
-    
-    # Load in Training and Testing Data
-    datafolder = Path(data_path)
-    X_train = getData(datafolder / huge_train_data_file, index = 0) 
-    y_train = X_train['stars']      #y_train = X_train[['stars']]
-    X_train = X_train.drop(columns='stars')
-    #X_train = X_train.drop(columns=bus_features_bool) IF U WANT TO DROP FEATURES THIS IS HOW
-
-    
-    #The indexes of the dataframe arnt used so just ignore how it doesnt start w/ 0 
-    X_val = getData(datafolder / cleaned_validate_queries, index = 0)   
-    y_val = X_val['stars']
-    X_val = X_val.drop(columns='stars')
-    #X_val = X_val.drop(columns=bus_features_bool)
-
-    X_test = getData( datafolder / cleaned_test_queries, index = 0) 
-    #X_test = X_test.drop(columns=bus_features_bool) IF U WANT TO DROP FEATURES THIS IS HOW
-    
-    # we dont have y test for the uneducated
-    # Use .values to convert to numpy
-   
-    # GRAPHS AND FEATURE ANALYSIS .....
-    
-    # Lets try some models
-    
-
-    """
-    ###### Random Model ###### RMSE = ~2.1
-    print("Random Model ...")
-    clf = Complete_Random_Model()
-    #Validation 
-    y_pred = clf.predict(X_val.values)
-    print(y_pred)
-    rmse = RMSE(y_pred, y_val.values)
-    print("Random Validation RMSE is: {}".format(rmse))
-    #Test 
-    y_pred = clf.predict(X_test.values)
-    submission = pd.DataFrame(y_pred, columns=['stars'])
-    submission.to_csv(submission_file, index_label='index')
-    print("Random Model FINISHED")
-    """
-
-
-    '''
-    ###### Random Probabilistic Model  ###### RMSE = ~1.7
-    print("Random Probabilistic Model ...")
-    clf = Random_Prob_Model()
-    #Validation 
-    clf.fit(X_train.values,y_train.values)
-    y_pred = clf.predict(X_val.values)
-    rmse = RMSE(y_pred, y_val.values)
-    print(F"Random Probabilistic Validation RMSE is: {rmse}")
-    #Test 
-    y_pred = clf.predict(X_test.values)
-    submission = pd.DataFrame(y_pred, columns=['stars'])
-    submission.to_csv(submission_file, index_label='index')
-    print("Random Probabilistic Model FINISHED")
-    '''
-    
-    ''' validation rmse = 1.0522
-    #Linear Regression
-    print("Linear Regression Model ...")
-    clf = LinearRegression()
-    #Validation 
-    clf.fit(X_train.values,y_train.values)
-    y_pred = clf.predict(X_val.values)
-    rmse = RMSE(y_pred, y_val.values)
-    print(F"Linear Regression RMSE is: {rmse}")
-    #Test 
-    y_pred = clf.predict(X_test.values)
-    submission = pd.DataFrame(y_pred, columns=['stars'])
-    submission.to_csv(submission_file, index_label='index')
-    print("Linear Regression FINISHED")
-    '''
-    
-
-    """
-    #Regression with polynomial features 1.046 with polyfeatures(3)
-    print("Linear Regression Model ...")
-    clf = LinearRegression()
-    poly = PolynomialFeatures(3)
-    X_poly_train = poly.fit_transform(X_train.values)
-    X_poly_val = poly.fit_transform(X_val.values)
-    #Validation 
-    clf.fit(X_poly_train,y_train.values)
-    y_pred = clf.predict(X_poly_val)
-    rmse = RMSE(y_pred, y_val.values)
-    print(F"Linear Regression RMSE is: {rmse}")
-    #Test 
-    y_pred = clf.predict(X_test.values)
-    submission = pd.DataFrame(y_pred, columns=['stars'])
-    submission.to_csv(submission_file, index_label='index')
-    print("Linear Regression FINISHED")
-    """
-
-    
-    """
-    print("Logistic Regression Model ...")
-    clf = LogisticRegression()
-    #Validation 
-    clf.fit(X_train.values,y_train.values)
-    y_pred = clf.predict(X_val)
-    rmse = RMSE(y_pred, y_val.values)
-    print(F"Log Regression RMSE is: {rmse}")
-    #Test 
-    y_pred = clf.predict(X_test.values)
-    submission = pd.DataFrame(y_pred, columns=['stars'])
-    submission.to_csv(submission_file, index_label='index')
-    print("Linear Regression FINISHED")
-    """
-
-
-
-    '''
-    #1.048 ish with max depth of 7, 1.058 on submit
-    #Decision Tree
-    print("Decision Tree Model ...")
-    print("Investingating Best Depth...")
-    dt_rmse = []
-    dt_max_depths = np.arange(1,21)
-    for i in dt_max_depths:
-        clf = DecisionTree(i)
-        #Validation 
-        clf.fit(X_train.values,y_train.values)
-        y_pred = clf.predict(X_val.values)
-        rmse = RMSE(y_pred, y_val.values)
-        dt_rmse.append(rmse)
-    best_k = np.argmin(dt_rmse) + 1
-    print("Best k is : {}".format(best_k))
-    plt.title('Validation RMSE vs Max Tree Depth')
-    plt.xlabel('Max Tree Depth')
-    plt.ylabel('Validation RMSE')
-    plt.plot(dt_max_depths, dt_rmse, 'ko-')
-    plt.show()
-    #Refit to out submission
-    clf = DecisionTree(best_k)
-    #Validation 
-    clf.fit(X_train.values,y_train.values)
-    #Test 
-    y_pred = clf.predict(X_test.values)
-    submission = pd.DataFrame(y_pred, columns=['stars'])
-    submission.to_csv(submission_file, index_label='index')
-    print("Decision Tree Model FINISHED")    
-    '''
-    
-
-
-    #clf = autosklearn.classification.AutoSklearnClassifier()
-    #clf.fit(X_train.values, y_train.values)
-    #y_pred = clf.predict(X_val.values)
-    #rmse = RMSE(y_pred, y_val.values)
-    #print("rmse is {}".format(rmse))
-    
-    
-    
-    
-    '''
-    #rng = np.random.RandomState(1)
-    #regr_2 = AdaBoostRegressor(DecisionTreeRegressor(max_depth=13),
-    #                      n_estimators=500, random_state=rng)
-#
-    #regr_2.fit(X_train.values,y_train.values)
-    #y_pred = regr_2.predict(X_val.values)
-    #rmse = RMSE(y_pred, y_val.values)
-   # print(rmse)
-    
-    #for j in [500,2000,8000,99999]:
-    #    clf_stump=DecisionTreeRegressor(max_features=None,max_leaf_nodes=j)
-    #    for i in np.arange(1,26):
-    #        bstlfy=AdaBoostRegressor(base_estimator=clf_stump,n_estimators=i)
-    #    bstlfy.fit(X_train.values,y_train.values)
-    #    y_pred = bstlfy.predict(X_val.values)
-    #    rmse = RMSE(y_pred, y_val.values)
-    #    print(rmse)
-    
-   # DTC = DecisionTreeRegressor(random_state = 11, max_features = "auto",max_depth = None)
-
-    #ABC = AdaBoostRegressor(base_estimator = DTC)
-
-    # run grid search
-   # my_func = make_scorer(RMSE,greater_is_better=False)
-   # grid_search_ABC = GridSearchCV(ABC, param_grid=param_grid, scoring =my_func)    
-   # grid_search_ABC.fit(X_train.values,y_train.values)
-   # print(grid_search_ABC.best_params_)
-   '''
-    
-    
-
-
-    # init model
-    #regsr = Regressor()
-    # train data
-    #regsr.train(X_train.values, y_train.values)
-    # plt.plot(regsr.getObject().loss_curve_)
-
-    # used for minibatch SGD
-    # perm = np.random.permutation(len(X_train.values))
-    # X_train_random = X_train.values[perm]
-    # y_train_random = y_train.values[perm]
-    # chunk_size = 50
-    # num_folds = math.ceil(X_train_random.shape[0] / chunk_size)
-    # X_train_folds = np.asarray(np.array_split(X_train_random, num_folds))
-    # y_train_folds = np.asarray(np.array_split(y_train_random, num_folds))
-    # regsr.minibatch_train(X_train_folds, y_train_folds)
-
-    # display the relative importance of each attribute
-    # print(regsr.getObject().feature_importances_)
-
-    #print("Finished training")
-    # report(regsr.getparams())
-
-
-
-
-    # Neural Network
-    regsr = MLPRegressor(verbose=True, max_iter=200, hidden_layer_sizes=100, learning_rate='adaptive', learning_rate_init=1e-4)
-    regsr.fit(X_train.values, y_train.values)
-    print("Finished training")
-    y_pred = regsr.predict(X_val.values)
-    print("Finished validation")
-    sdgr_rmse = RMSE(y_pred, y_val.values)
-    print(F"This is NN's RMSE: {sdgr_rmse}")
-    y_pred = regsr.predict(X_test.values)
-    print("Finished prediction")
-    submission = pd.DataFrame(y_pred, columns=['stars'])
-    submission.to_csv(submission_file, index_label='index')
- 
-
