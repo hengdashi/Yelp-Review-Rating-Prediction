@@ -4,7 +4,7 @@ import pandas as pd
 from utils import *
 from constants import *
 from pathlib import Path
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from preprocessor import Preprocessor
 
 # Models
@@ -33,6 +33,9 @@ from sklearn.metrics import make_scorer
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
+
+# import autosklearn.regression
+# from tpot import TPOTRegressor
 
 ############ Base Classifier/Regressors Class Every Model Will Inherit From ############
 
@@ -142,9 +145,8 @@ if __name__ == "__main__":
    #X_train = X_train.drop(columns=bus_features_bool) #IF U WANT TO DROP FEATURES THIS IS HOW
     X_train = X_train.values
     y_train = y_train.values
-    
 
-    
+
     #The indexes of the data frame arnt used so just ignore how it doesn't start w/ 0 
     X_val = getData(datafolder / cleaned_validate_queries, index = 0)   
     y_val = X_val['stars']
@@ -159,8 +161,6 @@ if __name__ == "__main__":
     X_test = X_test.values
     # we dont have y test for the uneducated
     # Use .values to convert to numpy
-    
-  
 
 
   # TODO  GRAPHS AND FEATURE ANALYSIS .....
@@ -170,10 +170,11 @@ if __name__ == "__main__":
        X_train = scaler.fit_transform(X_train)
        X_val = scaler.transform(X_val)
        X_test = scaler.transform(X_test)
-  
+
     # BEST MODEL SO FAR! 185, 4, .1 (1.0427 submitted, 1.0425 if attributes_Caters dropped
-    
-    for i in [185]:
+
+    # validation 1.04237 added noise level and removed catering
+    for i in [125]:
         for j in [4]:
             for lr in [.1]: #.09 is a little better but not much
                 gbd = GradientBoostingRegressor(n_estimators=i, learning_rate=lr, max_depth=j, random_state=0, loss='ls').fit(X_train, y_train)
@@ -184,7 +185,7 @@ if __name__ == "__main__":
                 submission = pd.DataFrame(y_pred, columns=['stars'])
                 submission.to_csv(submission_file, index_label='index')
     print(gbd.feature_importances_)
-    
+
     '''
     #Random Forest , 1.043 not the best
     for i in [150, 200, 250]:
@@ -396,15 +397,27 @@ if __name__ == "__main__":
     #print("Finished training")
     # report(regsr.getparams())
 
+    # AUTO-SKLEARN
+    # automl = autosklearn.regression.AutoSklearnRegressor(per_run_time_limit=2160, time_left_for_this_task=21600)
+    # automl.fit(X_train.copy(), y_train.copy())
+    # # automl.refit(X_train.copy(), y_train.copy())
+    # print(automl.show_models())
+    # y_pred = automl.predict(X_val)
+    # print("AutoSklearn's RMSE is {}".format(RMSE(y_pred, y_val)))
+    # y_pred = automl.predict(X_test)
+    # submission = pd.DataFrame(y_pred, columns=['stars'])
+    # submission.to_csv(submission_file, index_label='index')
 
-        
-    #clf = autosklearn.classification.AutoSklearnClassifier()
-    #clf.fit(X_train, y_train)
-    #y_pred = clf.predict(X_val)
-    #rmse = RMSE(y_pred, y_val)
-    #print("rmse is {}".format(rmse))
-    
-    
+    # TPOT
+    # tpot = TPOTRegressor(max_time_mins=300, verbosity=2)
+    # tpot.fit(X_train.copy(), y_train.copy())
+    # tpot.export('tpot.py')
+    # y_pred = tpot.predict(X_val)
+    # print("TPOT's RMSE is {}".format(RMSE(y_pred, y_val)))
+    # y_pred = tpot.predict(X_test)
+    # submission = pd.DataFrame(y_pred, columns=['stars'])
+    # submission.to_csv(submission_file, index_label='index')
+
     #class Regressor(object):
     #def __init__(self):
 

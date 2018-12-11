@@ -23,7 +23,7 @@ class Preprocessor:
         
         # EXTRACT THE DATA FROM BUISNESS.CSV THAT WE ARE INTERESTED IN
         
-        bus_features = bus_features_id + bus_features_numerical + bus_features_bool
+        bus_features = bus_features_id + bus_features_numerical + bus_features_bool + bus_features_cat
         
         bus_data = getData(self.datafolder / bus_file, bus_features)
         
@@ -40,8 +40,14 @@ class Preprocessor:
             if "attributes_RestaurantsPriceRange2" in bus_features_numerical and  "attributes_RestaurantsPriceRange2" in bus_data.columns:
                 bus_data.fillna({"attributes_RestaurantsPriceRange2": 2}, inplace=True)
             # IF YOU ADD MORE NUMERICAL FEATURES YOU MIGHT NEED TO EDIT HERE DEPENDING ON IF IT HAS MISSING VALUES
-      
-        
+
+            if "attributes_NoiseLevel" in bus_features_cat:
+                bus_data.fillna({"attributes_NoiseLevel": "average"}, inplace=True)
+                bus_data.replace("very_loud", 0, inplace=True)
+                bus_data.replace("loud", 1, inplace=True)
+                bus_data.replace("average", 2, inplace=True)
+                bus_data.replace("quiet", 3, inplace=True)
+
         # LOOP THROUGH ALL BOOLEAN FEATURES AND REPLACE ANY MISSING VALUES WITH FALSE (0)
         for x in bus_features_bool:
             if x in bus_data.columns:

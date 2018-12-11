@@ -33,10 +33,13 @@ bus_features_id = ["business_id"]
 
 bus_features_numerical = ["stars", "review_count", "attributes_RestaurantsPriceRange2"]
                 
-bus_features_bool = ["attributes_BikeParking", "attributes_BusinessAcceptsCreditCards", "attributes_Caters",
+bus_features_bool = ["attributes_BikeParking", "attributes_BusinessAcceptsCreditCards",
                      "attributes_GoodForKids", "attributes_HasTV", "attributes_OutdoorSeating", "attributes_RestaurantsDelivery",  
                      "attributes_RestaurantsGoodForGroups", "attributes_RestaurantsReservations","attributes_RestaurantsTableService", 
                      "attributes_RestaurantsTakeOut", "attributes_WheelchairAccessible"]
+
+bus_features_cat = ["attributes_NoiseLevel"]
+# bus_features_cat = []
 
 # bus_features_drop = features to drop
 bus_features_drop = bus_features_bool.copy()
