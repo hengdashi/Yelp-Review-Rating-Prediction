@@ -14,9 +14,6 @@ class Preprocessor:
         self.users_data = None
         self.review_data = None
         self.scaler = MinMaxScaler(feature_range=(1, 5))
-        # Hengda what are you doing with these?
-        # self.scaler = StandardScaler()
-        # self.nmlzr = Normalizer()
 
     # PREPROCESS BUSINESS.CSV DATA
     def preprocess_bus(self):
@@ -120,14 +117,6 @@ class Preprocessor:
         #DONE
         print("Finished users.csv preprocess")
         
-        # fill nan value with mean
-        #but there are none
-        #users_data.fillna(users_data.mean(), inplace=True)
-        # find numerical data columns
-        #num_cols = users_data.columns[users_data.dtypes.apply(lambda c: np.issubdtype(c, np.number))]
-        # rescaling the data
-        #users_data[num_cols] = self.scaler.fit_transform(users_data[num_cols])
-
     # PROCESS THE TRAINING REVIEWS
     def preprocess_reviews(self):
     
@@ -143,7 +132,7 @@ class Preprocessor:
         review_data.to_csv(self.datafolder / huge_train_data_file)
         self.review_data = review_data
         
-        # No NaNs so everythign should be fine
+        # No NaNs so everything should be fine
         
         # DONE
         print("Finished train_reviews.csv preprocess")
@@ -176,8 +165,3 @@ class Preprocessor:
         # DONE
         print("Finished validation and test queries processing")
         
-        #if not is_test:
-        #    y_test = test_data['stars']
-        #    return X_test, y_test
-        ##else:
-        #   return X_test

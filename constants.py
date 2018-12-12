@@ -27,23 +27,9 @@ submission_file = "submission.csv"
 
 # Features related
 
-#Business id is not numerical but oh well
-
 bus_features_id = ["business_id"]
 
 bus_features_numerical = ["stars", "review_count", "attributes_RestaurantsPriceRange2"]
-
-# bus_features_bool = ["attributes_BikeParking", 
-#                   "attributes_BusinessAcceptsCreditCards",
-#                   "attributes_GoodForKids",
-#                   "attributes_HasTV",
-#                   "attributes_OutdoorSeating",
-#                   "attributes_RestaurantsDelivery",  
-#                   "attributes_RestaurantsGoodForGroups",
-#                   "attributes_RestaurantsReservations",
-#                   "attributes_RestaurantsTableService", 
-#                   "attributes_RestaurantsTakeOut", 
-#                   "attributes_WheelchairAccessible"]
 
 bus_features_bool = ["attributes_BikeParking", 
                      "attributes_BusinessAcceptsCreditCards",
@@ -59,12 +45,12 @@ bus_features_bool = ["attributes_BikeParking",
 
 
 bus_features_cat = ["attributes_NoiseLevel"]
-# bus_features_cat = []
 
-# bus_features_drop = features to drop
+# bus_features_drop = features to drop if wanted
 bus_features_drop = bus_features_bool.copy()
 bus_features_keep = ["attributes_BusinessAcceptsCreditCards", "attributes_RestaurantsGoodForGroups", "attributes_RestaurantsTakeOut",
                     "attributes_HasTV", "attributes_BikeParking" ] # Features to Keep
+
 for feature in bus_features_keep:
     if feature in bus_features_drop:
         bus_features_drop.remove(feature)
