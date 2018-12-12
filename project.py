@@ -233,7 +233,7 @@ if __name__ == "__main__":
     #Regression with polynomial features 1.046 with polyfeatures(3)
     #Tuned, best was 2 or 3 but this isnt close to our best so not redoing
     clf = LinearRegression()
-    poly = PolynomialFeatures(3)
+    poly = PolynomialFeatures(2)
     X_poly_train = poly.fit_transform(X_train)
     X_poly_val = poly.fit_transform(X_val)
     #Validation 
@@ -314,7 +314,8 @@ if __name__ == "__main__":
     plt.ylabel('Validation RMSE')
     plt.plot(k_vals, k_rmses, 'ko-')
     plt.show()
-            
+    '''
+    
     # Neural Network
     regsr = MLPRegressor(verbose=False, max_iter=200, hidden_layer_sizes=100, learning_rate='adaptive', learning_rate_init=1e-4)
     regsr.fit(X_train, y_train)
@@ -326,7 +327,7 @@ if __name__ == "__main__":
     #print("Finished prediction")
     #submission = pd.DataFrame(y_pred, columns=['stars'])
     #submission.to_csv(submission_file, index_label='index')
-    '''
+    
     
     #Random Forest
     #Uncomment to do a very slow search over 6 hyper parameters, none of which beat GBR
