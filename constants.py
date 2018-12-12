@@ -32,11 +32,31 @@ submission_file = "submission.csv"
 bus_features_id = ["business_id"]
 
 bus_features_numerical = ["stars", "review_count", "attributes_RestaurantsPriceRange2"]
-                
-bus_features_bool = ["attributes_BikeParking", "attributes_BusinessAcceptsCreditCards",
-                     "attributes_GoodForKids", "attributes_HasTV", "attributes_OutdoorSeating", "attributes_RestaurantsDelivery",  
-                     "attributes_RestaurantsGoodForGroups", "attributes_RestaurantsReservations","attributes_RestaurantsTableService", 
-                     "attributes_RestaurantsTakeOut", "attributes_WheelchairAccessible"]
+
+# bus_features_bool = ["attributes_BikeParking", 
+#                   "attributes_BusinessAcceptsCreditCards",
+#                   "attributes_GoodForKids",
+#                   "attributes_HasTV",
+#                   "attributes_OutdoorSeating",
+#                   "attributes_RestaurantsDelivery",  
+#                   "attributes_RestaurantsGoodForGroups",
+#                   "attributes_RestaurantsReservations",
+#                   "attributes_RestaurantsTableService", 
+#                   "attributes_RestaurantsTakeOut", 
+#                   "attributes_WheelchairAccessible"]
+
+bus_features_bool = ["attributes_BikeParking", 
+                     "attributes_BusinessAcceptsCreditCards",
+                     "attributes_GoodForKids",
+                     "attributes_HasTV",
+                     "attributes_OutdoorSeating",
+                     "attributes_RestaurantsDelivery",  
+                     "attributes_RestaurantsGoodForGroups",
+                     "attributes_RestaurantsReservations",
+                     "attributes_RestaurantsTableService", 
+                     "attributes_RestaurantsTakeOut", 
+                     "attributes_WheelchairAccessible"]
+
 
 bus_features_cat = ["attributes_NoiseLevel"]
 # bus_features_cat = []
@@ -55,7 +75,7 @@ user_features_id = ["user_id"]
 user_features_numerical = ["average_stars", "review_count", "useful"] 
 
 
-# All 
+# All
 review_features = ["user_id", "business_id", "stars"]
 
 # Scale or not

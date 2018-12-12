@@ -173,8 +173,8 @@ if __name__ == "__main__":
 
     # BEST MODEL SO FAR! 185, 4, .1 (1.0427 submitted, 1.0425 if attributes_Caters dropped
 
-    # validation 1.04237 added noise level and removed catering
-    for i in [125]:
+    # validation 1.04234 added noise level and removed catering
+    for i in [145]:
         for j in [4]:
             for lr in [.1]: #.09 is a little better but not much
                 gbd = GradientBoostingRegressor(n_estimators=i, learning_rate=lr, max_depth=j, random_state=0, loss='ls').fit(X_train, y_train)

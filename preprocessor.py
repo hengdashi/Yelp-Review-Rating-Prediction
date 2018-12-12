@@ -41,25 +41,43 @@ class Preprocessor:
                 bus_data.fillna({"attributes_RestaurantsPriceRange2": 2}, inplace=True)
             # IF YOU ADD MORE NUMERICAL FEATURES YOU MIGHT NEED TO EDIT HERE DEPENDING ON IF IT HAS MISSING VALUES
 
-            if "attributes_NoiseLevel" in bus_features_cat:
-                bus_data.fillna({"attributes_NoiseLevel": "average"}, inplace=True)
-                bus_data.replace("very_loud", 0, inplace=True)
-                bus_data.replace("loud", 1, inplace=True)
-                bus_data.replace("average", 2, inplace=True)
-                bus_data.replace("quiet", 3, inplace=True)
+        if "attributes_NoiseLevel" in bus_features_cat:
+            bus_data.fillna({"attributes_NoiseLevel": "average"}, inplace=True)
+            bus_data.replace("very_loud", 0, inplace=True)
+            bus_data.replace("loud", 1, inplace=True)
+            bus_data.replace("average", 2, inplace=True)
+            bus_data.replace("quiet", 3, inplace=True)
+
+        if "attributes_WiFi" in bus_features_cat:
+            bus_data.fillna({"attributes_WiFi": bus_data["attributes_WiFi"].mode()[0]}, inplace=True)
+            bus_data.replace("free", 0, inplace=True)
+            bus_data.replace("paid", 1, inplace=True)
+            bus_data.replace("no", 2, inplace=True)
+
+        if "attributes_RestaurantsAttire" in bus_features_cat:
+            bus_data.fillna({"attributes_RestaurantsAttire": "casual"}, inplace=True)
+            bus_data.replace("casual", 0, inplace=True)
+            bus_data.replace("dressy", 1, inplace=True)
+            bus_data.replace("formal", 2, inplace=True)
+
+        if "attributes_Alcohol" in bus_features_cat:
+            bus_data.fillna({"attributes_Alcohol": bus_data["attributes_Alcohol"].mode()[0]}, inplace=True)
+            bus_data.replace("none", 0, inplace=True)
+            bus_data.replace("beer_and_wine", 1, inplace=True)
+            bus_data.replace("full_bar", 2, inplace=True)
 
         # LOOP THROUGH ALL BOOLEAN FEATURES AND REPLACE ANY MISSING VALUES WITH FALSE (0)
         for x in bus_features_bool:
             if x in bus_data.columns:
                 bus_data.fillna({x: 0}, inplace=True)
-        
+
         #COVERT ALL T/F TO 1/0
         if bus_features_bool:
             bus_data.replace(True, 1, inplace=True)
             bus_data.replace(False, 0, inplace=True)
-                 
-                
-        # RENAME ANY CONFLICTING NAMES WITH OTHER FILES       
+
+
+        # RENAME ANY CONFLICTING NAMES WITH OTHER FILES
         if 'stars' in bus_data.columns:
             bus_data.rename(columns={'stars': 'bus_avg_stars'}, inplace=True)
             
@@ -69,7 +87,7 @@ class Preprocessor:
         # OUTPUT TO A CSV FILE TO SANITY CHECK
         bus_data.to_csv(self.datafolder / bus_dict_file)
         self.bus_data = bus_data
-        
+
         # DONE
         print("Finished business.csv preprocess")
 
